@@ -1,0 +1,81 @@
+# Tests
+
+## Test 1 - Employer conversion reaches the protected hiring workspace [sanity]
+Viewport: desktop
+Covers: public employer role posting /api/leads/role-request, secure Employer role claim /api/access/claim, public-lead continuity into /api/client/role-requests, employer profile persistence, role-based workspace routing
+Description: Verifies a real employer can post a role before registration, sign in with the same work email, claim the Employer role, and continue with the hiring brief inside the protected workspace.
+
+Steps:
+1. On the public Employers page post a Management Accountant role for "Northstar Accounting" using the fresh account work email and confirm the role-received state
+2. Choose Continue to Employer Workspace, complete secure sign-in with that same email, select "I hire finance talent", enter "Northstar Accounting" and continue
+3. Open Roles and confirm the Management Accountant brief from the public form is present
+4. Open Company, save website "https://northstar.example" and team size "25 people"
+5. Refresh and return to Employer Workspace
+
+Expected: The account remains Employer-only, the public role brief is present in the protected role list without being re-entered, and the company settings persist after refresh.
+
+## Test 2 - Talent signup creates the actual protected account
+Viewport: mobile
+Covers: secure authentication, public talent application /api/talent/apply, automatic Talent role registration /api/access/claim, public-application continuity into protected /api/talent/profile, role-locked Talent Workspace
+Description: Verifies the public Talent signup is real account creation rather than an application-only form.
+
+Steps:
+1. On the public Talent page complete the signup form as a Management Accountant with 5 years experience and choose Create my SouthBridge account
+2. Complete the secure authentication popup using the signup email
+3. Confirm SouthBridge routes directly into Talent Workspace without asking the user to submit the application a second time or manually select the Talent role
+4. Open My profile and confirm the submitted name, Management Accountant role, 5 years experience and availability were seeded into the protected profile
+5. Sign out, sign back in with the same account and open Talent Workspace again
+
+Expected: A persistent authenticated Talent account exists, the submitted application data is carried into its private profile, and the account remains role-locked after sign-out/sign-in.
+
+## Test 3 - Block cross-role and unauthorised Agency access
+Viewport: desktop
+Covers: server-side Employer/Talent API boundary, immutable customer role guardrail, Agency organisation permission boundary, protected route handling
+Setup:
+1. Actor A has a registered Employer account
+2. Actor B has a registered Talent account
+3. Actor C is authenticated with no Agency membership
+Description: Verifies URL changes and direct API calls cannot bypass the role model.
+
+Steps:
+1. Actor A manually navigates to #talentportal and attempts to load /api/talent/profile
+2. Actor B manually navigates to #employerportal and attempts to load /api/client/role-requests
+3. Actor B attempts to claim Employer after being registered as Talent
+4. Actor C manually navigates to #command and attempts to load /api/command/intake
+
+Expected: Both customer cross-role attempts are denied, the Talent role cannot self-switch to Employer, and the non-member cannot access Agency Command Center or its intake data.
+
+## Test 4 - Public intake converts into CRM and screening bench
+Viewport: desktop
+Covers: Agency Intake /api/command/intake, employer intake conversion to CRM and qualified role, talent intake conversion to screening candidate, shared organisation scope, audit-backed operating handoff
+Setup:
+1. Submit one public employer Bookkeeper enquiry for "Harbour Ledger LLP"
+2. Create one new Bookkeeper Talent account through the public signup
+3. Agency Owner has an active SouthBridge organisation workspace
+Description: Verifies public conversions reach the real Agency operating system.
+
+Steps:
+1. Agency Owner opens Agency Command Center > Intake and confirms both public submissions appear
+2. Convert the Harbour Ledger LLP employer enquiry into CRM + role
+3. Convert the talent application into the screening bench
+4. Open CRM and confirm Harbour Ledger LLP plus its Bookkeeper role are present
+5. Confirm the talent applicant exists at screening with SouthBridge Score 0 until assessment
+
+Expected: Both submissions have durable converted states, the employer is represented in CRM/role pipeline, and the talent applicant is on the screening bench without an invented assessment score.
+
+## Test 5 - Adzuna connector fails closed until credentials are configured
+Viewport: desktop
+Covers: Adzuna configuration status /api/radar/adzuna/status, fail-closed manual sync /api/radar/adzuna/sync, Opportunity Radar source state, existing Radar data preservation
+Setup:
+1. Agency operator has CRM permission
+2. ADZUNA_APP_ID and ADZUNA_APP_KEY are not configured in the test environment
+Description: Verifies the installed Adzuna connector exposes only configuration state and cannot source or alter jobs without encrypted credentials.
+
+Steps:
+1. Open Agency Command Center > Radar and confirm Adzuna UK finance feed shows credential required
+2. Confirm the interface names ADZUNA_APP_ID and ADZUNA_APP_KEY as encrypted backend requirements without exposing any values
+3. Choose Sync Adzuna
+4. Confirm a visible configuration error is returned
+5. Refresh Radar and confirm the existing opportunity queue remains unchanged
+
+Expected: Adzuna remains disabled until both encrypted secrets exist, no credential value is visible client-side, the sync request fails closed, and no hiring signal is created by the failed attempt.
