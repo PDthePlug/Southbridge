@@ -1,0 +1,18 @@
+{
+  "headline": "Welcome to SouthBridge Talent",
+  "subtitle": "Sign in securely. Your registered role determines which workspace you can access.",
+  "methods": [
+    "google",
+    "apple",
+    "x"
+  ],
+  "style": {
+    "mode": "light",
+    "accentColor": "#2453FF",
+    "backgroundColor": "#F7F7F5",
+    "panelColor": "#FFFFFF",
+    "textColor": "#0F172A",
+    "fontFamily": "Inter, system-ui, sans-serif",
+    "borderRadius": 16
+  }
+}
